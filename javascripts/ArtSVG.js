@@ -166,6 +166,22 @@
     ArtSVG.DEFAULT_SIZES.WIDTH  = 300;
     ArtSVG.DEFAULT_SIZES.HEIGHT = 300;
 
+    /**
+     * This method is getter for container width for drawing.
+     * @return {number} This is returned as container width for drawing.
+     */
+    ArtSVG.prototype.getContainerWidth = function() {
+        return parseInt(this.container.style.width);
+    };
+
+    /**
+     * This method is getter for container height for drawing.
+     * @return {number} This is returned as container height for drawing.
+     */
+    ArtSVG.prototype.getContainerHeight = function() {
+        return parseInt(this.container.style.height);
+    };
+
     (function($) {
 
         /**
