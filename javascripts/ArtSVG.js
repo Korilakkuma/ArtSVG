@@ -182,6 +182,24 @@
         return parseInt(this.container.style.height);
     };
 
+    /**
+     * This method is getter for stroke color.
+     * @return {string} This is returned as stroke color string.
+     */
+    ArtSVG.prototype.getStroke = function() {
+        return this.attributes.stroke;
+    };
+
+    /**
+     * This method is setter for stroke color.
+     * @param {string} stroke This argument is string for color.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setStroke = function(stroke) {
+        this.attributes.stroke = String(stroke);
+        return this;
+    };
+
     (function($) {
 
         /**
