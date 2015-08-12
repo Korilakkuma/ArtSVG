@@ -200,6 +200,24 @@
         return this;
     };
 
+    /**
+     * This method is getter for fill color.
+     * @return {string} This is returned as fill color string.
+     */
+    ArtSVG.prototype.getFill = function() {
+        return this.attributes.fill;
+    };
+
+    /**
+     * This method is setter for fill color.
+     * @param {string} fill This argument is string for color.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setFill = function(fill) {
+        this.attributes.fill = String(fill);
+        return this;
+    };
+
     (function($) {
 
         /**
