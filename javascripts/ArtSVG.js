@@ -48,79 +48,13 @@
         this.svg.setAttribute('width',  (w > 0) ? w : ArtSVG.DEFAULT_SIZES.WIDTH);
         this.svg.setAttribute('height', (h > 0) ? h : ArtSVG.DEFAULT_SIZES.HEIGHT);
 
-        this.attributes = {
-            stroke   : new ArtSVG.Color(0, 0, 0, 1).toString(),
-            fill     : new ArtSVG.Color(0, 0, 0, 1).toString(),
-            width    : 1,
-            linecap  : 'butt',
-            linejoin : 'miter',
-            family   : 'Arial',
-            size     : 24
-        };
+        this.drawer = new ArtSVG.Drawer(this.container);
 
-        this.numberOfObjects = 0;
+        this.mode = ArtSVG.Drawer.MODES.PATH;
 
         var self = this;
 
         var isDown = false;
-
-        var getX = function(event) {
-            if (event.pageX) {
-                // Desktop
-            } else if (event.touches[0]) {
-                // Touch Panel
-                event = event.touches[0];
-            } else if (event.changedTouches[0]) {
-                // Touch Panel
-                event = event.changedTouches[0];
-            }
-
-            return event.pageX - self.container.offsetLeft;
-        };
-
-        var getY = function(event) {
-            if (event.pageY) {
-                // Desktop
-            } else if (event.touches[0]) {
-                // Touch Panel
-                event = event.touches[0];
-            } else if (event.changedTouches[0]) {
-                // Touch Panel
-                event = event.changedTouches[0];
-            }
-
-            return event.pageY - self.container.offsetTop;
-        };
-
-        var drawPath = function(phase, x, y) {
-            switch (phase) {
-                case ArtSVG.MouseEvents.START :
-                    var html = self.container.innerHTML.replace('</svg>', '') + '<path id="' + (ArtSVG.OBJECT_ID_PREFIX + self.numberOfObjects) + '" /></svg>';
-
-                    self.container.innerHTML = html;
-
-                    var element = document.getElementById(ArtSVG.OBJECT_ID_PREFIX + self.numberOfObjects);
-
-                    element.setAttribute('stroke',          self.attributes.stroke);
-                    element.setAttribute('fill',            'none');
-                    element.setAttribute('stroke-width',    self.attributes.width);
-                    element.setAttribute('stroke-linecap',  self.attributes.linecap);
-                    element.setAttribute('stroke-linejoin', self.attributes.linejoin);
-                    element.setAttribute('d',               ('M' + x + ' ' + y));
-
-                    break;
-                case ArtSVG.MouseEvents.MOVE :
-                    var element = document.getElementById(ArtSVG.OBJECT_ID_PREFIX + self.numberOfObjects);
-
-                    element.setAttribute('d', (element.getAttribute('d') + ', L' + x + ' ' + y));
-
-                    break;
-                case ArtSVG.MouseEvents.END :
-                    break;
-                default :
-                    break;
-            }
-        };
 
         this.container.addEventListener(ArtSVG.MouseEvents.START, function(event) {
             if (isDown) {
@@ -129,10 +63,7 @@
 
             isDown = true;
 
-            var x = getX(event);
-            var y = getY(event);
-
-            drawPath(event.type, x, y);
+            self.drawer.draw(event, self.mode);
         }, true);
 
         this.container.addEventListener(ArtSVG.MouseEvents.MOVE, function(event) {
@@ -143,10 +74,7 @@
             // for Touch Panel
             event.preventDefault();
 
-            var x = getX(event);
-            var y = getY(event);
-
-            drawPath(event.type, x, y);
+            self.drawer.draw(event, self.mode);
         }, true);
 
         global.addEventListener(ArtSVG.MouseEvents.END, function(event) {
@@ -154,14 +82,13 @@
                 return;
             }
 
-            self.numberOfObjects++;
             isDown = false;
+
+            self.drawer.draw(event, self.mode);
         }, true);
     }
 
     /** Constant values as class properties (static properties) */
-    ArtSVG.OBJECT_ID_PREFIX = 'object-';
-
     ArtSVG.DEFAULT_SIZES        = {};
     ArtSVG.DEFAULT_SIZES.WIDTH  = 300;
     ArtSVG.DEFAULT_SIZES.HEIGHT = 300;
@@ -183,38 +110,59 @@
     };
 
     /**
-     * This method is getter for stroke color.
-     * @return {string} This is returned as stroke color string.
+     * This method returns the selected drawer.
+     * @return {string} This is returned as string for the selected drawer.
      */
-    ArtSVG.prototype.getStroke = function() {
-        return this.attributes.stroke;
+    ArtSVG.prototype.getMode = function() {
+        return this.mode;
     };
 
     /**
-     * This method is setter for stroke color.
-     * @param {string} stroke This argument is string for color.
+     * This method selects drawer.
+     * @param {string} mode This argument is one of 'path', 'rectangle', 'circle', 'ellipse', 'line'.
      * @return {ArtSVG} This is returned for method chain.
      */
-    ArtSVG.prototype.setStroke = function(stroke) {
-        this.attributes.stroke = String(stroke);
+    ArtSVG.prototype.setMode = function(mode) {
+        if (String(mode).toUpperCase() in ArtSVG.Drawer.MODES) {
+            this.mode = String(mode).toLowerCase();
+        }
+
         return this;
     };
 
     /**
-     * This method is getter for fill color.
+     * This method gets fill color.
      * @return {string} This is returned as fill color string.
      */
     ArtSVG.prototype.getFill = function() {
-        return this.attributes.fill;
+        return this.drawer.getFill();
     };
 
     /**
-     * This method is setter for fill color.
+     * This method sets fill color.
      * @param {string} fill This argument is string for color.
      * @return {ArtSVG} This is returned for method chain.
      */
     ArtSVG.prototype.setFill = function(fill) {
-        this.attributes.fill = String(fill);
+        this.drawer.setFill(fill);
+        return this;
+    };
+
+    /**
+     * This method gets stroke color.
+     * @return {string} This is returned as stroke color string.
+     */
+    ArtSVG.prototype.getStroke = function() {
+        return this.drawer.getStroke();
+    };
+
+    /**
+     * This method sets stroke color.
+     * @param {string} stroke This argument is string for color.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setStroke = function(stroke) {
+        this.drawer.setStroke(stroke);
         return this;
     };
 
@@ -353,6 +301,471 @@
 
         // Export
         $.Color = Color;
+
+    })(ArtSVG);
+
+    (function($) {
+
+        /**
+         * This class defines properties and methods for drawing.
+         * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
+         * @constructor
+         */
+        function Drawer(container) {
+            this.container = document.body;
+
+            if (container instanceof HTMLElement) {
+                this.container = container;
+            }
+
+            this.numberOfObjects = 0;
+
+            this.attributes = {
+                'fill'            : new $.Color(0, 0, 0, 1).toString(),
+                'stroke'          : new $.Color(0, 0, 0, 1).toString(),
+                'stroke-width'    : 1,
+                'stroke-linecap'  : 'butt',
+                'stroke-linejoin' : 'miter'
+            };
+
+            this.points = {
+                x1 : 0,
+                y1 : 0
+            };
+        }
+
+        /** Constant values as class properties (static properties) */
+        Drawer.ELEMENT_ID_PREFIX = 'art-svg-';
+
+        Drawer.MODES           = {};
+        Drawer.MODES.PATH      = 'path';
+        Drawer.MODES.RECTANGLE = 'rectangle';
+        Drawer.MODES.CIRCLE    = 'circle';
+        Drawer.MODES.ELLIPSE   = 'ellipse';
+        Drawer.MODES.LINE      = 'line';
+
+        /**
+         * This method is facade method for drawing.
+         * @param {Event} event This argument is event object.
+         * @param {string} mode This argument is one of 'path', 'rectangle', 'circle', 'ellipse', 'line'.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.draw = function(event, mode) {
+            switch (mode) {
+                case Drawer.MODES.PATH :
+                    this.drawPath(event);
+                    break;
+                case Drawer.MODES.RECTANGLE :
+                    this.drawRect(event);
+                    break;
+                case Drawer.MODES.CIRCLE :
+                    this.drawCircle(event);
+                    break;
+                case Drawer.MODES.ELLIPSE :
+                    this.drawEllipse(event);
+                    break;
+                case Drawer.MODES.LINE :
+                    this.drawLine(event);
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws path.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawPath = function(event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var html = this.container.innerHTML.replace('</svg>', '') + '<path id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+
+                    this.container.innerHTML = html;
+
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('fill',            'none');
+                    element.setAttribute('stroke',          this.attributes['stroke']);
+                    element.setAttribute('stroke-width',    this.attributes['stroke-width']);
+                    element.setAttribute('stroke-linecap',  this.attributes['stroke-linecap']);
+                    element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
+
+                    element.setAttribute('d', ('M' + x + ' ' + y));
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('d', (element.getAttribute('d') + ', L' + x + ' ' + y));
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws rectangle.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawRect = function (event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var html = this.container.innerHTML.replace('</svg>', '') + '<rect id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+
+                    this.container.innerHTML = html;
+
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('fill',            this.attributes['fill']);
+                    element.setAttribute('stroke',          this.attributes['stroke']);
+                    element.setAttribute('stroke-width',    this.attributes['stroke-width']);
+                    element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
+
+                    element.setAttribute('x', x);
+                    element.setAttribute('y', y);
+
+                    this.points.x1 = x;
+                    this.points.y1 = y;
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    var x1 = this.points.x1;
+                    var y1 = this.points.y1;
+
+                    var startX = Math.min(x, x1);
+                    var startY = Math.min(y, y1);
+                    var endX   = Math.max(x, x1);
+                    var endY   = Math.max(y, y1);
+                    var width  = Math.abs(endX - startX);
+                    var height = Math.abs(endY - startY);
+
+                    element.setAttribute('x',      startX);
+                    element.setAttribute('y',      startY);
+                    element.setAttribute('width',  width);
+                    element.setAttribute('height', height);
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+                    this.clearPoints();
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws circle.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawCircle = function(event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var html = this.container.innerHTML.replace('</svg>', '') + '<circle id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+
+                    this.container.innerHTML = html;
+
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('fill',         this.attributes['fill']);
+                    element.setAttribute('stroke',       this.attributes['stroke']);
+                    element.setAttribute('stroke-width', this.attributes['stroke-width']);
+
+                    element.setAttribute('cx', x);
+                    element.setAttribute('cy', y);
+
+                    this.points.x1 = x;
+                    this.points.y1 = y;
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    var x1 = this.points.x1;
+                    var y1 = this.points.y1;
+
+                    var startX = Math.min(x, x1);
+                    var startY = Math.min(y, y1);
+                    var endX   = Math.max(x, x1);
+                    var endY   = Math.max(y, y1);
+                    var r      = Math.max(Math.abs(endX - startX), Math.abs(endY - startY));
+                    // var r      = Math.sqrt(Math.pow((endX - startX), 2), Math.pow(Math.abs(endY - startY), 2));
+
+                    element.setAttribute('r', r);
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+                    this.clearPoints();
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws ellipse.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawEllipse = function(event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var html = this.container.innerHTML.replace('</svg>', '') + '<ellipse id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+
+                    this.container.innerHTML = html;
+
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('fill',         this.attributes['fill']);
+                    element.setAttribute('stroke',       this.attributes['stroke']);
+                    element.setAttribute('stroke-width', this.attributes['stroke-width']);
+
+                    element.setAttribute('cx', x);
+                    element.setAttribute('cy', y);
+
+                    this.points.x1 = x;
+                    this.points.y1 = y;
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    var x1 = this.points.x1;
+                    var y1 = this.points.y1;
+
+                    var startX = Math.min(x, x1);
+                    var startY = Math.min(y, y1);
+                    var endX   = Math.max(x, x1);
+                    var endY   = Math.max(y, y1);
+                    var rx     = Math.abs(endX - startX);
+                    var ry     = Math.abs(endY - startY);
+
+                    element.setAttribute('rx', rx);
+                    element.setAttribute('ry', ry);
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+                    this.clearPoints();
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws line.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawLine = function(event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var html = this.container.innerHTML.replace('</svg>', '') + '<line id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+
+                    this.container.innerHTML = html;
+
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('fill',            'none');
+                    element.setAttribute('stroke',          this.attributes['stroke']);
+                    element.setAttribute('stroke-width',    this.attributes['stroke-width']);
+                    element.setAttribute('stroke-linecap',  this.attributes['stroke-linecap']);
+                    element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
+
+                    this.points.x1 = x;
+                    this.points.y1 = y;
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    var x1 = this.points.x1;
+                    var y1 = this.points.y1;
+
+                    element.setAttribute('x1', x1);
+                    element.setAttribute('y1', y1);
+                    element.setAttribute('x2', x);
+                    element.setAttribute('y2', y);
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+                    this.clearPoints();
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method clears the held coordinates.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.clearPoints = function() {
+            this.points.x1 = 0;
+            this.points.y1 = 0;
+
+            return this;
+        };
+
+        /**
+         * This method gets fill color.
+         * @return {string} This is returned as fill color string.
+         */
+        Drawer.prototype.getFill = function() {
+            return this.attributes['fill'];
+        };
+
+        /**
+         * This method sets fill color.
+         * @param {string} fill This argument is string for color.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setFill = function(fill) {
+            this.attributes['fill'] = String(fill);
+            return this;
+        };
+
+        /**
+         * This method gets stroke color.
+         * @return {string} This is returned as stroke color string.
+         */
+        Drawer.prototype.getStroke = function() {
+            return this.attributes['stroke'];
+        };
+
+        /**
+         * This method sets stroke color.
+         * @param {string} stroke This argument is string for color.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setStroke = function(stroke) {
+            this.attributes['stroke'] = String(stroke);
+            return this;
+        };
+
+        /**
+         * This class method calculates relative horizontal coordinate on canvas from event object.
+         * @param {Event} event This argument is to get coordinates at cursor.
+         * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
+         * @return {number} This is returned as relative horizontal coordinate on SVG.
+         */
+        Drawer.getOffsetX = function(event, container) {
+            if (!(event instanceof Event)) {
+                return 0;
+            }
+
+            if (!(container instanceof HTMLElement)) {
+                return 0;
+            }
+
+            if (event.pageX) {
+                // Desktop
+            } else if (event.touches[0]) {
+                // Touch Panel
+                event = event.touches[0];
+            } else if (event.changedTouches[0]) {
+                // Touch Panel
+                event = event.changedTouches[0];
+            }
+
+            return event.pageX - container.offsetLeft + container.scrollLeft;
+        };
+
+        /**
+         * This class method calculates relative vertical coordinate on canvas from event object.
+         * @param {Event} event This argument is to get coordinates at cursor.
+         * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
+         * @return {number} This is returned as relative vertical coordinate on SVG.
+         */
+        Drawer.getOffsetY = function(event, container) {
+            if (!(event instanceof Event)) {
+                return 0;
+            }
+
+            if (!(container instanceof HTMLElement)) {
+                return 0;
+            }
+
+            if (event.pageY) {
+                // Desktop
+            } else if (event.touches[0]) {
+                // Touch Panel
+                event = event.touches[0];
+            } else if (event.changedTouches[0]) {
+                // Touch Panel
+                event = event.changedTouches[0];
+            }
+
+            return event.pageY - container.offsetTop + container.scrollTop;
+        };
+
+        // Export
+        $.Drawer = Drawer;
 
     })(ArtSVG);
 
