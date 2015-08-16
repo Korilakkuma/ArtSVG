@@ -14,6 +14,10 @@ $(function() {
 
     var artSVG = new ArtSVG(container, svg, WIDTH, HEIGHT);
 
+    $('#select-mode').change(function() {
+        artSVG.setMode(this.value);
+    });
+
     $('#color-stroke').spectrum({
         preferredFormat      : 'rgb',
         color                : 'rgba(0, 0, 0, 1.0)',
