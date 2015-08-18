@@ -18,6 +18,20 @@ $(function() {
         artSVG.setMode(this.value);
     });
 
+    $('#color-fill').spectrum({
+        preferredFormat      : 'rgb',
+        color                : 'rgba(0, 0, 0, 1.0)',
+        allowEmpty           : true,
+        showInput            : true,
+        showAlpha            : true,
+        showPalette          : true,
+        pallete              : PALLETE,
+        showSelectionPalette : true,
+        hide                 : function(color) {
+            artSVG.setFill(color.toRgbString());
+        }
+    });
+
     $('#color-stroke').spectrum({
         preferredFormat      : 'rgb',
         color                : 'rgba(0, 0, 0, 1.0)',
@@ -32,18 +46,8 @@ $(function() {
         }
     });
 
-    $('#color-fill').spectrum({
-        preferredFormat      : 'rgb',
-        color                : 'rgba(0, 0, 0, 1.0)',
-        allowEmpty           : true,
-        showInput            : true,
-        showAlpha            : true,
-        showPalette          : true,
-        pallete              : PALLETE,
-        showSelectionPalette : true,
-        hide                 : function(color) {
-            artSVG.setFill(color.toRgbString());
-        }
+    $('#number-stroke-width').change(function() {
+        artSVG.setStrokeWidth(this.valueAsNumber);
     });
 
 });
