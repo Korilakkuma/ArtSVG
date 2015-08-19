@@ -48,7 +48,8 @@
         this.svg.setAttribute('width',  (w > 0) ? w : ArtSVG.DEFAULT_SIZES.WIDTH);
         this.svg.setAttribute('height', (h > 0) ? h : ArtSVG.DEFAULT_SIZES.HEIGHT);
 
-        this.drawer = new ArtSVG.Drawer(this.container);
+        this.drawer  = new ArtSVG.Drawer(this.container);
+        this.history = new ArtSVG.History(this.container);
 
         this.mode = ArtSVG.Drawer.MODES.PATH;
 
@@ -85,6 +86,7 @@
             isDown = false;
 
             self.drawer.draw(event, self.mode);
+            self.history.updateHistory();
         }, true);
     }
 
@@ -128,6 +130,22 @@
         }
 
         return this;
+    };
+
+    /**
+     * This method executes undo.
+     * @return {boolean} If undo is executed, this value is true. Otherwise, this value is false.
+     */
+    ArtSVG.prototype.undo = function() {
+        return this.history.undo();
+    };
+
+    /**
+     * This method executes redo.
+     * @return {boolean} If redo is executed, this value is true. Otherwise, this value is false.
+     */
+    ArtSVG.prototype.redo = function() {
+        return this.history.redo();
     };
 
     /**
@@ -806,6 +824,69 @@
 
         // Export
         $.Drawer = Drawer;
+
+    })(ArtSVG);
+
+    (function($) {
+
+        /**
+         * This class defines properties and methods for history.
+         * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
+         * @constructor
+         */
+        function History(container) {
+            this.container = document.body;
+
+            if (container instanceof HTMLElement) {
+                this.container = container;
+            }
+
+            this.histories = [this.container.innerHTML];
+            this.pointer   = 0;
+        };
+
+        /**
+         * This method updates stack for history.
+         * @return {History} This is returned for method chain.
+         */
+        History.prototype.updateHistory = function() {
+            this.histories[++this.pointer] = this.container.innerHTML;
+
+            if (this.pointer < (this.histories.length - 1)) {
+                this.histories = this.histories.slice(0, (this.pointer + 1));
+            }
+
+            return this;
+        };
+
+        /**
+         * This method executes undo.
+         * @return {boolean} If undo is executed, this value is true. Otherwise, this value is false.
+         */
+        History.prototype.undo = function() {
+            if (this.pointer > 0) {
+                this.container.innerHTML = this.histories[--this.pointer];
+                return true;
+            }
+
+            return false;
+        };
+
+        /**
+         * This method executes redo.
+         * @return {boolean} If redo is executed, this value is true. Otherwise, this value is false.
+         */
+        History.prototype.redo = function() {
+            if (this.pointer < (this.histories.length - 1)) {
+                this.container.innerHTML = this.histories[++this.pointer];
+                return true;
+            }
+
+            return false;
+        };
+
+        // Export
+        $.History = History;
 
     })(ArtSVG);
 
