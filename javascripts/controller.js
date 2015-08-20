@@ -50,4 +50,16 @@ $(function() {
         artSVG.setStrokeWidth(this.valueAsNumber);
     });
 
+    $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
+        if (!artSVG.undo()) {
+            console.log('Cannot undo');
+        }
+    });
+
+    $('#button-redo').on(ArtSVG.MouseEvents.CLICK, function() {
+        if (!artSVG.redo()) {
+            console.log('Cannot redo');
+        }
+    });
+
 });
