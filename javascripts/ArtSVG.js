@@ -149,6 +149,17 @@
     };
 
     /**
+     * This method clears the all of drawn object.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.clear = function() {
+        this.drawer.clear();
+        this.history.updateHistory();
+
+        return this;
+    };
+
+    /**
      * This method gets fill color.
      * @return {string} This is returned as fill color string.
      */
@@ -693,6 +704,19 @@
                 default :
                     break;
             }
+
+            return this;
+        };
+
+        /**
+         * This method clears the all of drawn object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.clear = function() {
+            var width  = parseInt(this.container.style.width);
+            var height = parseInt(this.container.style.height);
+
+            this.container.innerHTML = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>';
 
             return this;
         };
