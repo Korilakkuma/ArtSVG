@@ -62,4 +62,8 @@ $(function() {
         }
     });
 
+    $('#button-clear').on(ArtSVG.MouseEvents.CLICK, function() {
+        artSVG.clear();
+    });
+
 });
