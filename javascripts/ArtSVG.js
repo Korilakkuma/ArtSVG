@@ -166,6 +166,24 @@
         return this;
     };
 
+    /**
+     * This method gets stroke width.
+     * @return {number} This is returned as stroke width.
+     */
+    ArtSVG.prototype.getStrokeWidth = function() {
+        return this.drawer.getStrokeWidth();
+    };
+
+    /**
+     * This method sets stroke width.
+     * @param {number} strokeWidth This argument is number for stroke width.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setStrokeWidth = function(strokeWidth) {
+        this.drawer.setStrokeWidth(strokeWidth);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -705,6 +723,28 @@
          */
         Drawer.prototype.setStroke = function(stroke) {
             this.attributes['stroke'] = String(stroke);
+            return this;
+        };
+
+        /** This method gets stroke width.
+         * @return {number} This is returned as stroke width.
+         */
+        Drawer.prototype.getStrokeWidth = function() {
+            return this.attributes['stroke-width'];
+        };
+
+        /**
+         * This method sets stroke width.
+         * @param {number} strokeWidth This argument is number for stroke width.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setStrokeWidth = function(strokeWidth) {
+            var w = parseFloat(strokeWidth);
+
+            if (w >= 0) {
+                this.attributes['stroke-width'] = w;
+            }
+
             return this;
         };
 
