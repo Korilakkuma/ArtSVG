@@ -51,11 +51,121 @@
         this.drawer  = new ArtSVG.Drawer(this.container);
         this.history = new ArtSVG.History(this.container);
 
-        this.mode = ArtSVG.Drawer.MODES.PATH;
+        this.mode = ArtSVG.Mode.SELECT;
+
+        /** {@type Array.<SVGElement>} */
+        this.selectedElements = [];
 
         var self = this;
 
         var isDown = false;
+
+        /**
+         * This method selects the drawn element.
+         * @param {Event} event This argument is event object.
+         */
+        var _select = function(event) {
+            if (!(event instanceof Event)) {
+                return;
+            }
+
+            if ((event.target === self.container) || (event.target === self.svg)) {
+                return;
+            }
+
+            switch (event.type) {
+                case ArtSVG.MouseEvents.START :
+                    self.selectedElements[0] = event.target;
+
+                    break;
+                case ArtSVG.MouseEvents.MOVE :
+                    var x = ArtSVG.Drawer.getOffsetX(event, self.container);
+                    var y = ArtSVG.Drawer.getOffsetY(event, self.container);
+
+                    for (var i = 0, len = self.selectedElements.length; i < len; i++) {
+                        var selectedElement = self.selectedElements[i];
+
+                        if (selectedElement instanceof SVGRectElement) {
+                            var width  = parseFloat(selectedElement.getAttribute('width'));
+                            var height = parseFloat(selectedElement.getAttribute('height'));
+
+                            selectedElement.setAttribute('x', (x - width  / 2));
+                            selectedElement.setAttribute('y', (y - height / 2));
+                        } else if ((selectedElement instanceof SVGCircleElement) || (selectedElement instanceof SVGEllipseElement)) {
+                            selectedElement.setAttribute('cx', x);
+                            selectedElement.setAttribute('cy', y);
+                        } else if (selectedElement instanceof SVGLineElement) {
+                            var x1 = parseFloat(selectedElement.getAttribute('x1'));
+                            var x2 = parseFloat(selectedElement.getAttribute('x2'));
+                            var y1 = parseFloat(selectedElement.getAttribute('y1'));
+                            var y2 = parseFloat(selectedElement.getAttribute('y2'));
+
+                            var cx = (Math.abs(x2 - x1) / 2) + Math.min(x2, x1);
+                            var cy = (Math.abs(y2 - y1) / 2) + Math.min(y2, y1);
+
+                            var dx = x - cx;
+                            var dy = y - cy;
+
+                            var newX1 = x1 + dx;;
+                            var newX2 = x2 + dx;
+                            var newY1 = y1 + dy;
+                            var newY2 = y2 + dy;
+
+                            selectedElement.setAttribute('x1', newX1);
+                            selectedElement.setAttribute('x2', newX2);
+                            selectedElement.setAttribute('y1', newY1);
+                            selectedElement.setAttribute('y2', newY2);
+                        } else if (selectedElement instanceof SVGPathElement) {
+                            var minX = Number.MAX_VALUE;
+                            var minY = Number.MAX_VALUE;
+
+                            var maxX = Number.MIN_VALUE;
+                            var maxY = Number.MIN_VALUE;
+
+                            var points = selectedElement.getAttribute('d').split(', ');
+
+                            for (var j = 0, num = points.length; j < num; j++) {
+                                var point = points[j].split(' ');
+
+                                var pointX = parseFloat(point[0].slice(1));
+                                var pointY = parseFloat(point[1]);
+
+                                if (pointX < minX) {minX = pointX;}
+                                if (pointY < minY) {minY = pointY;}
+                                if (pointX > maxX) {maxX = pointX;}
+                                if (pointY > maxY) {maxY = pointY;}
+                            }
+
+                            var cx = ((maxX - minX) / 2) + minX;
+                            var cy = ((maxY - minY) / 2) + minY;
+
+                            var tx = x - cx;
+                            var ty = y - cy;
+
+                            for (var j = 0, num = points.length; j < num; j++) {
+                                var point = points[j].split(' ');
+
+                                var x = parseFloat(point[0].slice(1)) + tx;
+                                var y = parseFloat(point[1])          + ty;
+
+                                if (j === 0) {
+                                    selectedElement.setAttribute('d', ('M' + x + ' ' + y));
+                                } else {
+                                    selectedElement.setAttribute('d', (selectedElement.getAttribute('d') + ', L' + x + ' ' + y));
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                case ArtSVG.MouseEvents.END :
+                    self.history.updateHistory();
+
+                    break;
+                default :
+                    break;
+            }
+        };
 
         this.container.addEventListener(ArtSVG.MouseEvents.START, function(event) {
             if (isDown) {
@@ -64,7 +174,11 @@
 
             isDown = true;
 
-            self.drawer.draw(event, self.mode);
+            if (self.mode === ArtSVG.Mode.SELECT) {
+                _select(event);
+            } else {
+                self.drawer.draw(event, self.mode);
+            }
         }, true);
 
         this.container.addEventListener(ArtSVG.MouseEvents.MOVE, function(event) {
@@ -75,7 +189,11 @@
             // for Touch Panel
             event.preventDefault();
 
-            self.drawer.draw(event, self.mode);
+            if (self.mode === ArtSVG.Mode.SELECT) {
+                _select(event);
+            } else {
+                self.drawer.draw(event, self.mode);
+            }
         }, true);
 
         global.addEventListener(ArtSVG.MouseEvents.END, function(event) {
@@ -85,8 +203,12 @@
 
             isDown = false;
 
-            self.drawer.draw(event, self.mode);
-            self.history.updateHistory();
+            if (self.mode === ArtSVG.Mode.SELECT) {
+                _select(event);
+            } else {
+                self.drawer.draw(event, self.mode);
+                self.history.updateHistory();
+            }
         }, true);
     }
 
@@ -121,15 +243,26 @@
 
     /**
      * This method selects drawer.
-     * @param {string} mode This argument is one of 'path', 'rectangle', 'circle', 'ellipse', 'line'.
+     * @param {string} mode This argument is one of 'select', 'path', 'rectangle', 'circle', 'ellipse', 'line'.
      * @return {ArtSVG} This is returned for method chain.
      */
     ArtSVG.prototype.setMode = function(mode) {
-        if (String(mode).toUpperCase() in ArtSVG.Drawer.MODES) {
+        if (String(mode).toUpperCase() in ArtSVG.Mode) {
             this.mode = String(mode).toLowerCase();
+        } else if (String(mode).toUpperCase() in ArtSVG.Drawer.MODES) {
+            this.mode = String(mode).toLowerCase();
+            this.selectedElements.length = 0;
         }
 
         return this;
+    };
+
+    /**
+     * This method returns the array that contains the selected element.
+     * @return {Array.<SVGElement>} This is returnes as the array that contains the selected element.
+     */
+    ArtSVG.prototype.getSelectedElements = function() {
+        return this.selectedElements;
     };
 
     /**
@@ -149,7 +282,7 @@
     };
 
     /**
-     * This method clears the all of drawn object.
+     * This method clears the all of drawn element.
      * @return {ArtSVG} This is returned for method chain.
      */
     ArtSVG.prototype.clear = function() {
@@ -246,6 +379,22 @@
 
         // Export
         $.MouseEvents = MouseEvents;
+
+    })(ArtSVG);
+
+    (function($) {
+
+        /**
+         * This static class defines strings for representing application status.
+         */
+        function Mode() {
+        }
+
+        Mode.SELECT = 'select';
+        Mode.DRAW   = 'draw';
+
+        // Export
+        $.Mode = Mode;
 
     })(ArtSVG);
 
@@ -709,7 +858,7 @@
         };
 
         /**
-         * This method clears the all of drawn object.
+         * This method clears the all of drawn element.
          * @return {Drawer} This is returned for method chain.
          */
         Drawer.prototype.clear = function() {
