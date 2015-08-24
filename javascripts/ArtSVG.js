@@ -36,8 +36,8 @@
             this.container.appendChild(svg);
         }
 
-        this.svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        this.svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+        this.svg.setAttribute('xmlns',       ArtSVG.XMLNS);
+        this.svg.setAttribute('xmlns:xlink', ArtSVG.XLINK);
 
         var w = parseInt(width);
         var h = parseInt(height);
@@ -213,6 +213,9 @@
     }
 
     /** Constant values as class properties (static properties) */
+    ArtSVG.XMLNS = 'http://www.w3.org/2000/svg';
+    ArtSVG.XLINK = 'http://www.w3.org/1999/xlink';
+
     ArtSVG.DEFAULT_SIZES        = {};
     ArtSVG.DEFAULT_SIZES.WIDTH  = 300;
     ArtSVG.DEFAULT_SIZES.HEIGHT = 300;
@@ -585,12 +588,9 @@
 
             switch (event.type) {
                 case $.MouseEvents.START :
-                    var html = this.container.innerHTML.replace('</svg>', '') + '<path id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+                    var element = document.createElementNS($.XMLNS, 'path');
 
-                    this.container.innerHTML = html;
-
-                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
-
+                    element.setAttribute('id',              (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
                     element.setAttribute('fill',            'none');
                     element.setAttribute('stroke',          this.attributes['stroke']);
                     element.setAttribute('stroke-width',    this.attributes['stroke-width']);
@@ -598,6 +598,8 @@
                     element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
 
                     element.setAttribute('d', ('M' + x + ' ' + y));
+
+                    this.container.querySelector('svg').appendChild(element);
 
                     break;
                 case $.MouseEvents.MOVE :
@@ -632,12 +634,9 @@
 
             switch (event.type) {
                 case $.MouseEvents.START :
-                    var html = this.container.innerHTML.replace('</svg>', '') + '<rect id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+                    var element = document.createElementNS($.XMLNS, 'rect');
 
-                    this.container.innerHTML = html;
-
-                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
-
+                    element.setAttribute('id',              (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
                     element.setAttribute('fill',            this.attributes['fill']);
                     element.setAttribute('stroke',          this.attributes['stroke']);
                     element.setAttribute('stroke-width',    this.attributes['stroke-width']);
@@ -645,6 +644,8 @@
 
                     element.setAttribute('x', x);
                     element.setAttribute('y', y);
+
+                    this.container.querySelector('svg').appendChild(element);
 
                     this.points.x1 = x;
                     this.points.y1 = y;
@@ -696,18 +697,17 @@
 
             switch (event.type) {
                 case $.MouseEvents.START :
-                    var html = this.container.innerHTML.replace('</svg>', '') + '<circle id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+                    var element = document.createElementNS($.XMLNS, 'circle');
 
-                    this.container.innerHTML = html;
-
-                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
-
+                    element.setAttribute('id',           (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
                     element.setAttribute('fill',         this.attributes['fill']);
                     element.setAttribute('stroke',       this.attributes['stroke']);
                     element.setAttribute('stroke-width', this.attributes['stroke-width']);
 
                     element.setAttribute('cx', x);
                     element.setAttribute('cy', y);
+
+                    this.container.querySelector('svg').appendChild(element);
 
                     this.points.x1 = x;
                     this.points.y1 = y;
@@ -756,18 +756,17 @@
 
             switch (event.type) {
                 case $.MouseEvents.START :
-                    var html = this.container.innerHTML.replace('</svg>', '') + '<ellipse id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+                    var element = document.createElementNS($.XMLNS, 'ellipse');
 
-                    this.container.innerHTML = html;
-
-                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
-
+                    element.setAttribute('id',           (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
                     element.setAttribute('fill',         this.attributes['fill']);
                     element.setAttribute('stroke',       this.attributes['stroke']);
                     element.setAttribute('stroke-width', this.attributes['stroke-width']);
 
                     element.setAttribute('cx', x);
                     element.setAttribute('cy', y);
+
+                    this.container.querySelector('svg').appendChild(element);
 
                     this.points.x1 = x;
                     this.points.y1 = y;
@@ -817,17 +816,15 @@
 
             switch (event.type) {
                 case $.MouseEvents.START :
-                    var html = this.container.innerHTML.replace('</svg>', '') + '<line id="' + (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects) + '" /></svg>';
+                    var element = document.createElementNS($.XMLNS, 'line');
 
-                    this.container.innerHTML = html;
-
-                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
-
+                    element.setAttribute('id',              (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
                     element.setAttribute('fill',            'none');
                     element.setAttribute('stroke',          this.attributes['stroke']);
                     element.setAttribute('stroke-width',    this.attributes['stroke-width']);
-                    element.setAttribute('stroke-linecap',  this.attributes['stroke-linecap']);
                     element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
+
+                    this.container.querySelector('svg').appendChild(element);
 
                     this.points.x1 = x;
                     this.points.y1 = y;
@@ -835,6 +832,8 @@
                     break;
                 case $.MouseEvents.MOVE :
                     var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    element.setAttribute('stroke-linecap',  this.attributes['stroke-linecap']);
 
                     var x1 = this.points.x1;
                     var y1 = this.points.y1;
@@ -865,7 +864,7 @@
             var width  = parseInt(this.container.style.width);
             var height = parseInt(this.container.style.height);
 
-            this.container.innerHTML = '<svg width="' + width + '" height="' + height + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"></svg>';
+            this.container.innerHTML = '<svg width="' + width + '" height="' + height + '" xmlns="' + $.XMLNS + '" xmlns:xlink="' + $.XLINK + '"></svg>';
 
             return this;
         };
