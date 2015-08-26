@@ -539,6 +539,7 @@
         Drawer.MODES           = {};
         Drawer.MODES.PATH      = 'path';
         Drawer.MODES.RECTANGLE = 'rectangle';
+        Drawer.MODES.SQUARE    = 'square';
         Drawer.MODES.CIRCLE    = 'circle';
         Drawer.MODES.ELLIPSE   = 'ellipse';
         Drawer.MODES.LINE      = 'line';
@@ -546,7 +547,7 @@
         /**
          * This method is facade method for drawing.
          * @param {Event} event This argument is event object.
-         * @param {string} mode This argument is one of 'path', 'rectangle', 'circle', 'ellipse', 'line'.
+         * @param {string} mode This argument is one of 'path', 'rectangle', 'square', 'circle', 'ellipse', 'line'.
          * @return {Drawer} This is returned for method chain.
          */
         Drawer.prototype.draw = function(event, mode) {
@@ -556,6 +557,9 @@
                     break;
                 case Drawer.MODES.RECTANGLE :
                     this.drawRect(event);
+                    break;
+                case Drawer.MODES.SQUARE :
+                    this.drawSquare(event);
                     break;
                 case Drawer.MODES.CIRCLE :
                     this.drawCircle(event);
@@ -668,6 +672,68 @@
                     element.setAttribute('y',      startY);
                     element.setAttribute('width',  width);
                     element.setAttribute('height', height);
+
+                    break;
+                case $.MouseEvents.END :
+                    this.numberOfObjects++;
+                    this.clearPoints();
+
+                    break;
+                default :
+                    break;
+            }
+
+            return this;
+        };
+
+        /**
+         * This method draws square.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawSquare = function (event) {
+            if (!(event instanceof Event)) {
+                return this;
+            }
+
+            var x = Drawer.getOffsetX(event, this.container);
+            var y = Drawer.getOffsetY(event, this.container);
+
+            switch (event.type) {
+                case $.MouseEvents.START :
+                    var element = document.createElementNS($.XMLNS, 'rect');
+
+                    element.setAttribute('id',              (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
+                    element.setAttribute('fill',            this.attributes['fill']);
+                    element.setAttribute('stroke',          this.attributes['stroke']);
+                    element.setAttribute('stroke-width',    this.attributes['stroke-width']);
+                    element.setAttribute('stroke-linejoin', this.attributes['stroke-linejoin']);
+
+                    element.setAttribute('x', x);
+                    element.setAttribute('y', y);
+
+                    this.container.querySelector('svg').appendChild(element);
+
+                    this.points.x1 = x;
+                    this.points.y1 = y;
+
+                    break;
+                case $.MouseEvents.MOVE :
+                    var element = document.getElementById(Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects);
+
+                    var x1 = this.points.x1;
+                    var y1 = this.points.y1;
+
+                    var startX = Math.min(x, x1);
+                    var startY = Math.min(y, y1);
+                    var endX   = Math.max(x, x1);
+                    var endY   = Math.max(y, y1);
+                    var size   = Math.max(Math.abs(endX - startX), Math.abs(endY - startY));
+
+                    element.setAttribute('x',      startX);
+                    element.setAttribute('y',      startY);
+                    element.setAttribute('width',  size);
+                    element.setAttribute('height', size);
 
                     break;
                 case $.MouseEvents.END :
