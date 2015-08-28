@@ -15,7 +15,12 @@ $(function() {
     var artSVG = new ArtSVG(container, svg, WIDTH, HEIGHT);
 
     $('#select-mode').change(function() {
-        artSVG.setMode(this.value);
+        if (this.value === ArtSVG.Mode.SELECT) {
+            artSVG.setMode(this.value);
+        } else {
+            artSVG.setMode(ArtSVG.Mode.DRAW);
+            artSVG.setDrawerType(this.value);
+        }
     });
 
     $('#color-fill').spectrum({
