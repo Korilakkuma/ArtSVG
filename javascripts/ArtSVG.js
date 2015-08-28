@@ -83,78 +83,7 @@
                     var y = ArtSVG.Drawer.getOffsetY(event, self.container);
 
                     for (var i = 0, len = self.selectedElements.length; i < len; i++) {
-                        var selectedElement = self.selectedElements[i];
-
-                        if (selectedElement instanceof SVGRectElement) {
-                            var width  = parseFloat(selectedElement.getAttribute('width'));
-                            var height = parseFloat(selectedElement.getAttribute('height'));
-
-                            selectedElement.setAttribute('x', (x - width  / 2));
-                            selectedElement.setAttribute('y', (y - height / 2));
-                        } else if ((selectedElement instanceof SVGCircleElement) || (selectedElement instanceof SVGEllipseElement)) {
-                            selectedElement.setAttribute('cx', x);
-                            selectedElement.setAttribute('cy', y);
-                        } else if (selectedElement instanceof SVGLineElement) {
-                            var x1 = parseFloat(selectedElement.getAttribute('x1'));
-                            var x2 = parseFloat(selectedElement.getAttribute('x2'));
-                            var y1 = parseFloat(selectedElement.getAttribute('y1'));
-                            var y2 = parseFloat(selectedElement.getAttribute('y2'));
-
-                            var cx = (Math.abs(x2 - x1) / 2) + Math.min(x2, x1);
-                            var cy = (Math.abs(y2 - y1) / 2) + Math.min(y2, y1);
-
-                            var dx = x - cx;
-                            var dy = y - cy;
-
-                            var newX1 = x1 + dx;;
-                            var newX2 = x2 + dx;
-                            var newY1 = y1 + dy;
-                            var newY2 = y2 + dy;
-
-                            selectedElement.setAttribute('x1', newX1);
-                            selectedElement.setAttribute('x2', newX2);
-                            selectedElement.setAttribute('y1', newY1);
-                            selectedElement.setAttribute('y2', newY2);
-                        } else if (selectedElement instanceof SVGPathElement) {
-                            var minX = Number.MAX_VALUE;
-                            var minY = Number.MAX_VALUE;
-
-                            var maxX = Number.MIN_VALUE;
-                            var maxY = Number.MIN_VALUE;
-
-                            var points = selectedElement.getAttribute('d').split(', ');
-
-                            for (var j = 0, num = points.length; j < num; j++) {
-                                var point = points[j].split(' ');
-
-                                var pointX = parseFloat(point[0].slice(1));
-                                var pointY = parseFloat(point[1]);
-
-                                if (pointX < minX) {minX = pointX;}
-                                if (pointY < minY) {minY = pointY;}
-                                if (pointX > maxX) {maxX = pointX;}
-                                if (pointY > maxY) {maxY = pointY;}
-                            }
-
-                            var cx = ((maxX - minX) / 2) + minX;
-                            var cy = ((maxY - minY) / 2) + minY;
-
-                            var tx = x - cx;
-                            var ty = y - cy;
-
-                            for (var j = 0, num = points.length; j < num; j++) {
-                                var point = points[j].split(' ');
-
-                                var x = parseFloat(point[0].slice(1)) + tx;
-                                var y = parseFloat(point[1])          + ty;
-
-                                if (j === 0) {
-                                    selectedElement.setAttribute('d', ('M' + x + ' ' + y));
-                                } else {
-                                    selectedElement.setAttribute('d', (selectedElement.getAttribute('d') + ', L' + x + ' ' + y));
-                                }
-                            }
-                        }
+                        self.drawer.move(self.selectedElements[i], x, y);
                     }
 
                     break;
@@ -578,6 +507,27 @@
         };
 
         /**
+         * This method is facade method for moving element.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.move = function(element, x, y) {
+            if (element instanceof SVGRectElement) {
+                this.moveRectangle(element, x, y);
+            } else if ((element instanceof SVGCircleElement) || (element instanceof SVGEllipseElement)) {
+                this.moveEllipse(element, x, y);
+            } else if (element instanceof SVGLineElement) {
+                this.moveLine(element, x, y);
+            } else if (element instanceof SVGPathElement) {
+                this.movePath(element, x, y);
+            }
+
+            return this;
+        };
+
+        /**
          * This method draws path.
          * @param {Event} event This argument is event object.
          * @return {Drawer} This is returned for method chain.
@@ -918,6 +868,119 @@
                 default :
                     break;
             }
+
+            return this;
+        };
+
+        /**
+         * This method moves path.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.movePath = function(element, x, y) {
+            var minX = Number.MAX_VALUE;
+            var minY = Number.MAX_VALUE;
+
+            var maxX = Number.MIN_VALUE;
+            var maxY = Number.MIN_VALUE;
+
+            var points = element.getAttribute('d').split(', ');
+
+            for (var i = 0, len = points.length; i < len; i++) {
+                var point = points[i].split(' ');
+
+                var pointX = parseFloat(point[0].slice(1));
+                var pointY = parseFloat(point[1]);
+
+                if (pointX < minX) {minX = pointX;}
+                if (pointY < minY) {minY = pointY;}
+                if (pointX > maxX) {maxX = pointX;}
+                if (pointY > maxY) {maxY = pointY;}
+            }
+
+            var cx = ((maxX - minX) / 2) + minX;
+            var cy = ((maxY - minY) / 2) + minY;
+
+            var tx = x - cx;
+            var ty = y - cy;
+
+            for (var i = 0, len = points.length; i < len; i++) {
+                var point = points[i].split(' ');
+
+                var x = parseFloat(point[0].slice(1)) + tx;
+                var y = parseFloat(point[1])          + ty;
+
+                if (i === 0) {
+                    element.setAttribute('d', ('M' + x + ' ' + y));
+                } else {
+                    element.setAttribute('d', (element.getAttribute('d') + ', L' + x + ' ' + y));
+                }
+            }
+
+            return this;
+        };
+
+        /**
+         * This method moves rectangle.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.moveRectangle = function(element, x, y) {
+            var width  = parseFloat(element.getAttribute('width'));
+            var height = parseFloat(element.getAttribute('height'));
+
+            element.setAttribute('x', (x - width  / 2));
+            element.setAttribute('y', (y - height / 2));
+
+            return this;
+        };
+
+        /**
+         * This method moves ellipse.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.moveEllipse = function(element, x, y) {
+            element.setAttribute('cx', x);
+            element.setAttribute('cy', y);
+
+            return this;
+        };
+
+        /**
+         * This method moves line.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.moveLine = function(element, x, y) {
+            var x1 = parseFloat(element.getAttribute('x1'));
+            var x2 = parseFloat(element.getAttribute('x2'));
+            var y1 = parseFloat(element.getAttribute('y1'));
+            var y2 = parseFloat(element.getAttribute('y2'));
+
+            var cx = (Math.abs(x2 - x1) / 2) + Math.min(x2, x1);
+            var cy = (Math.abs(y2 - y1) / 2) + Math.min(y2, y1);
+
+            var dx = x - cx;
+            var dy = y - cy;
+
+            var newX1 = x1 + dx;;
+            var newX2 = x2 + dx;
+            var newY1 = y1 + dy;
+            var newY2 = y2 + dy;
+
+            element.setAttribute('x1', newX1);
+            element.setAttribute('x2', newX2);
+            element.setAttribute('y1', newY1);
+            element.setAttribute('y2', newY2);
 
             return this;
         };
