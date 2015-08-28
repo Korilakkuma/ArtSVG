@@ -53,6 +53,8 @@
 
         this.mode = ArtSVG.Mode.SELECT;
 
+        this.drawerType = ArtSVG.Drawer.Type.PATH;
+
         /** {@type Array.<SVGElement>} */
         this.selectedElements = [];
 
@@ -106,7 +108,7 @@
             if (self.mode === ArtSVG.Mode.SELECT) {
                 _select(event);
             } else {
-                self.drawer.draw(event, self.mode);
+                self.drawer.draw(event, self.drawerType);
             }
         }, true);
 
@@ -121,7 +123,7 @@
             if (self.mode === ArtSVG.Mode.SELECT) {
                 _select(event);
             } else {
-                self.drawer.draw(event, self.mode);
+                self.drawer.draw(event, self.drawerType);
             }
         }, true);
 
@@ -135,7 +137,7 @@
             if (self.mode === ArtSVG.Mode.SELECT) {
                 _select(event);
             } else {
-                self.drawer.draw(event, self.mode);
+                self.drawer.draw(event, self.drawerType);
                 self.history.updateHistory();
             }
         }, true);
@@ -166,24 +168,42 @@
     };
 
     /**
-     * This method returns the selected drawer.
-     * @return {string} This is returned as string for the selected drawer.
+     * This method is getter for application mode.
+     * @return {string} This is returned as string for application mode.
      */
     ArtSVG.prototype.getMode = function() {
         return this.mode;
     };
 
     /**
-     * This method selects drawer.
-     * @param {string} mode This argument is one of 'select', 'path', 'rectangle', 'circle', 'ellipse', 'line'.
+     * This method is setter for application mode.
+     * @param {string} mode This argument is either 'select' or 'draw'.
      * @return {ArtSVG} This is returned for method chain.
      */
     ArtSVG.prototype.setMode = function(mode) {
         if (String(mode).toUpperCase() in ArtSVG.Mode) {
             this.mode = String(mode).toLowerCase();
-        } else if (String(mode).toUpperCase() in ArtSVG.Drawer.MODES) {
-            this.mode = String(mode).toLowerCase();
-            this.selectedElements.length = 0;
+        }
+
+        return this;
+    };
+
+    /**
+     * This method returns drawer type.
+     * @return {string} This is returned as string for drawer type.
+     */
+    ArtSVG.prototype.getDrawerType = function() {
+        return this.drawerType;
+    };
+
+    /**
+     * This method sets drawer type.
+     * @param {string} drawerType This argument is one of 'path', 'rectangle', 'square', 'circle', 'ellipse', 'line'.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setDrawerType = function(drawerType) {
+        if (String(drawerType).toUpperCase() in ArtSVG.Drawer.Type) {
+            this.drawerType = String(drawerType).toLowerCase();
         }
 
         return this;
@@ -465,38 +485,30 @@
         /** Constant values as class properties (static properties) */
         Drawer.ELEMENT_ID_PREFIX = 'art-svg-';
 
-        Drawer.MODES           = {};
-        Drawer.MODES.PATH      = 'path';
-        Drawer.MODES.RECTANGLE = 'rectangle';
-        Drawer.MODES.SQUARE    = 'square';
-        Drawer.MODES.CIRCLE    = 'circle';
-        Drawer.MODES.ELLIPSE   = 'ellipse';
-        Drawer.MODES.LINE      = 'line';
-
         /**
          * This method is facade method for drawing.
          * @param {Event} event This argument is event object.
-         * @param {string} mode This argument is one of 'path', 'rectangle', 'square', 'circle', 'ellipse', 'line'.
+         * @param {string} type This argument is one of 'path', 'rectangle', 'square', 'circle', 'ellipse', 'line'.
          * @return {Drawer} This is returned for method chain.
          */
-        Drawer.prototype.draw = function(event, mode) {
-            switch (mode) {
-                case Drawer.MODES.PATH :
+        Drawer.prototype.draw = function(event, type) {
+            switch (type) {
+                case Drawer.Type.PATH :
                     this.drawPath(event);
                     break;
-                case Drawer.MODES.RECTANGLE :
+                case Drawer.Type.RECTANGLE :
                     this.drawRect(event);
                     break;
-                case Drawer.MODES.SQUARE :
+                case Drawer.Type.SQUARE :
                     this.drawSquare(event);
                     break;
-                case Drawer.MODES.CIRCLE :
+                case Drawer.Type.CIRCLE :
                     this.drawCircle(event);
                     break;
-                case Drawer.MODES.ELLIPSE :
+                case Drawer.Type.ELLIPSE :
                     this.drawEllipse(event);
                     break;
-                case Drawer.MODES.LINE :
+                case Drawer.Type.LINE :
                     this.drawLine(event);
                     break;
                 default :
@@ -1122,6 +1134,21 @@
 
             return event.pageY - container.offsetTop + container.scrollTop;
         };
+
+        /**
+         * This static class defines strings for drawer.
+         */
+        function Type() {
+        }
+
+        Type.PATH      = 'path';
+        Type.RECTANGLE = 'rectangle';
+        Type.SQUARE    = 'square';
+        Type.CIRCLE    = 'circle';
+        Type.ELLIPSE   = 'ellipse';
+        Type.LINE      = 'line';
+
+        Drawer.Type = Type;
 
         // Export
         $.Drawer = Drawer;
