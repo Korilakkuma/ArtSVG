@@ -298,6 +298,24 @@
         return this;
     };
 
+    /**
+     * This method gets stroke-linecap.
+     * @return {string} This is returned as stroke-linecap.
+     */
+    ArtSVG.prototype.getStrokeLinecap = function() {
+        return this.drawer.getStrokeLinecap();
+    };
+
+    /**
+     * This method sets stroke-linecap.
+     * @param {string} strokeLinecap This argument is one of 'butt', 'round', 'square'.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setStrokeLinecap = function(strokeLinecap) {
+        this.drawer.setStrokeLinecap(strokeLinecap);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1080,6 +1098,27 @@
         };
 
         /**
+         * This method gets stroke-linecap.
+         * @return {string} This is returned as stroke-linecap.
+         */
+        Drawer.prototype.getStrokeLinecap = function() {
+            return this.attributes['stroke-linecap'];
+        };
+
+        /**
+         * This method sets stroke-linecap.
+         * @param {string} strokeLinecap This argument is one of 'butt', 'round', 'square'.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setStrokeLinecap = function(strokeLinecap) {
+            if (String(strokeLinecap).toUpperCase() in Drawer.StrokeLinecap) {
+                this.attributes['stroke-linecap'] = strokeLinecap.toLowerCase();
+            }
+
+            return this;
+        };
+
+        /**
          * This class method calculates relative horizontal coordinate on canvas from event object.
          * @param {Event} event This argument is to get coordinates at cursor.
          * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
@@ -1149,6 +1188,18 @@
         Type.LINE      = 'line';
 
         Drawer.Type = Type;
+
+        /**
+         * This static class defines strings for stroke-linecap.
+         */
+        function StrokeLinecap() {
+        }
+
+        StrokeLinecap.BUTT   = 'butt';
+        StrokeLinecap.ROUND  = 'round';
+        StrokeLinecap.SQUARE = 'square';
+
+        Drawer.StrokeLinecap = StrokeLinecap;
 
         // Export
         $.Drawer = Drawer;
