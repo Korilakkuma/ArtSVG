@@ -55,6 +55,10 @@ $(function() {
         artSVG.setStrokeWidth(this.valueAsNumber);
     });
 
+    $('#select-stroke-linecap').change(function() {
+        artSVG.setStrokeLinecap(this.value);
+    });
+
     $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
         if (!artSVG.undo()) {
             console.log('Cannot undo');
