@@ -316,6 +316,24 @@
         return this;
     };
 
+    /**
+     * This method gets stroke-linejoin.
+     * @return {string} This is returned as stroke-linejoin.
+     */
+    ArtSVG.prototype.getStrokeLinejoin = function() {
+        return this.drawer.getStrokeLinejoin();
+    };
+
+    /**
+     * This method sets stroke-linejoin.
+     * @param {string} strokeLinejoin This argument is one of 'miter', 'round', 'bevel'.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setStrokeLinejoin = function(strokeLinejoin) {
+        this.drawer.setStrokeLinejoin(strokeLinejoin);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1119,6 +1137,27 @@
         };
 
         /**
+         * This method gets stroke-linejoin.
+         * @return {string} This is returned as stroke-linejoin.
+         */
+        Drawer.prototype.getStrokeLinejoin = function() {
+            return this.attributes['stroke-linejoin'];
+        };
+
+        /**
+         * This method sets stroke-linejoin.
+         * @param {string} strokeLinejoin This argument is one of 'miter', 'round', 'bevel'.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setStrokeLinejoin = function(strokeLinejoin) {
+            if (String(strokeLinejoin).toUpperCase() in Drawer.StrokeLinejoin) {
+                this.attributes['stroke-linejoin'] = strokeLinejoin.toLowerCase();
+            }
+
+            return this;
+        };
+
+        /**
          * This class method calculates relative horizontal coordinate on canvas from event object.
          * @param {Event} event This argument is to get coordinates at cursor.
          * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
@@ -1200,6 +1239,18 @@
         StrokeLinecap.SQUARE = 'square';
 
         Drawer.StrokeLinecap = StrokeLinecap;
+
+        /**
+         * This static class defines strings for stroke-linejoin.
+         */
+        function StrokeLinejoin() {
+        }
+
+        StrokeLinejoin.MITER = 'miter';
+        StrokeLinejoin.ROUND = 'round';
+        StrokeLinejoin.BEVEL = 'bevel';
+
+        Drawer.StrokeLinejoin = StrokeLinejoin;
 
         // Export
         $.Drawer = Drawer;
