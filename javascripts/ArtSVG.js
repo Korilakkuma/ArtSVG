@@ -49,7 +49,7 @@
         this.svg.setAttribute('height', (h > 0) ? h : ArtSVG.DEFAULT_SIZES.HEIGHT);
 
         this.drawer  = new ArtSVG.Drawer(this.container);
-        this.history = new ArtSVG.History(this.container);
+        this.history = new ArtSVG.History(this.svg);
 
         this.mode = ArtSVG.Mode.SELECT;
 
@@ -98,7 +98,7 @@
             }
         };
 
-        this.container.addEventListener(ArtSVG.MouseEvents.START, function(event) {
+        this.svg.addEventListener(ArtSVG.MouseEvents.START, function(event) {
             if (isDown) {
                 return;
             }
@@ -112,7 +112,7 @@
             }
         }, true);
 
-        this.container.addEventListener(ArtSVG.MouseEvents.MOVE, function(event) {
+        this.svg.addEventListener(ArtSVG.MouseEvents.MOVE, function(event) {
             if (!isDown) {
                 return;
             }
@@ -1038,10 +1038,7 @@
          * @return {Drawer} This is returned for method chain.
          */
         Drawer.prototype.clear = function() {
-            var width  = parseInt(this.container.style.width);
-            var height = parseInt(this.container.style.height);
-
-            this.container.innerHTML = '<svg width="' + width + '" height="' + height + '" xmlns="' + $.XMLNS + '" xmlns:xlink="' + $.XLINK + '"></svg>';
+            this.container.querySelector('svg').innerHTML = '';
 
             return this;
         };
@@ -1261,17 +1258,19 @@
 
         /**
          * This class defines properties and methods for history.
-         * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
+         * @param {SVGElement} svg This argument is the instance of SVGElement.
          * @constructor
          */
-        function History(container) {
-            this.container = document.body;
+        function History(svg) {
+            this.svg = null;
 
-            if (container instanceof HTMLElement) {
-                this.container = container;
+            if (svg instanceof SVGElement) {
+                this.svg = svg;
+            } else {
+                this.svg = document.createElement('svg');
             }
 
-            this.histories = [this.container.innerHTML];
+            this.histories = [this.svg.innerHTML];
             this.pointer   = 0;
         };
 
@@ -1280,7 +1279,7 @@
          * @return {History} This is returned for method chain.
          */
         History.prototype.updateHistory = function() {
-            this.histories[++this.pointer] = this.container.innerHTML;
+            this.histories[++this.pointer] = this.svg.innerHTML;
 
             if (this.pointer < (this.histories.length - 1)) {
                 this.histories = this.histories.slice(0, (this.pointer + 1));
@@ -1295,7 +1294,7 @@
          */
         History.prototype.undo = function() {
             if (this.pointer > 0) {
-                this.container.innerHTML = this.histories[--this.pointer];
+                this.svg.innerHTML = this.histories[--this.pointer];
                 return true;
             }
 
@@ -1308,7 +1307,7 @@
          */
         History.prototype.redo = function() {
             if (this.pointer < (this.histories.length - 1)) {
-                this.container.innerHTML = this.histories[++this.pointer];
+                this.svg.innerHTML = this.histories[++this.pointer];
                 return true;
             }
 
