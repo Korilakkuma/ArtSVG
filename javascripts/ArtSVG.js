@@ -138,7 +138,10 @@
                 _select(event);
             } else {
                 self.drawer.draw(event, self.drawerType);
-                self.history.updateHistory();
+
+                if (self.drawerType !== ArtSVG.Drawer.Type.TEXT) {
+                    self.history.updateHistory();
+                }
             }
         }, true);
     }
@@ -185,6 +188,14 @@
             this.mode = String(mode).toLowerCase();
         }
 
+        var textboxes = this.container.querySelectorAll('[type="text"]');
+
+        if (textboxes) {
+            for (var i = 0, len = textboxes.length; i < len; i++) {
+                this.container.removeChild(textboxes[i]);
+            }
+        }
+
         return this;
     };
 
@@ -202,6 +213,10 @@
      * @return {ArtSVG} This is returned for method chain.
      */
     ArtSVG.prototype.setDrawerType = function(drawerType) {
+        if (this.drawerType === ArtSVG.Drawer.Type.TEXT) {
+            this.history.updateHistory();
+        }
+
         if (String(drawerType).toUpperCase() in ArtSVG.Drawer.Type) {
             this.drawerType = String(drawerType).toLowerCase();
         }
@@ -512,6 +527,13 @@
                 'stroke-linejoin' : 'miter'
             };
 
+            this.font = {
+                'font-family' : 'Arial',
+                'font-size'   : '16px',
+                'font-style'  : 'normal',
+                'font-weight' : 'normal'
+            };
+
             this.points = {
                 x1 : 0,
                 y1 : 0
@@ -547,6 +569,9 @@
                 case Drawer.Type.LINE :
                     this.drawLine(event);
                     break;
+                case Drawer.Type.TEXT :
+                    this.drawText(event);
+                    break;
                 default :
                     break;
             }
@@ -562,14 +587,16 @@
          * @return {Drawer} This is returned for method chain.
          */
         Drawer.prototype.move = function(element, x, y) {
-            if (element instanceof SVGRectElement) {
+            if (element instanceof SVGPathElement) {
+                this.movePath(element, x, y);
+            } else if (element instanceof SVGRectElement) {
                 this.moveRectangle(element, x, y);
             } else if ((element instanceof SVGCircleElement) || (element instanceof SVGEllipseElement)) {
                 this.moveEllipse(element, x, y);
             } else if (element instanceof SVGLineElement) {
                 this.moveLine(element, x, y);
-            } else if (element instanceof SVGPathElement) {
-                this.movePath(element, x, y);
+            } else if (element instanceof SVGTextElement) {
+                this.moveText(element, x, y);
             }
 
             return this;
@@ -921,6 +948,53 @@
         };
 
         /**
+         * This method draws text.
+         * @param {Event} event This argument is event object.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawText = function(event) {
+            if (event.type !== $.MouseEvents.START) {
+                return this;
+            }
+
+            var element = document.createElementNS($.XMLNS, 'text');
+
+            element.setAttribute('id',     (Drawer.ELEMENT_ID_PREFIX + this.numberOfObjects));
+            element.setAttribute('fill',   this.attributes['fill']);
+            element.setAttribute('stroke', this.attributes['stroke']);
+
+            element.setAttribute('x', Drawer.getOffsetX(event, this.container));
+            element.setAttribute('y', Drawer.getOffsetY(event, this.container));
+
+            for (var prop in this.font) {
+                element['style'][prop] = this.font[prop];
+            }
+
+            var textbox = document.createElement('input');
+
+            textbox.setAttribute('type', 'text');
+
+            textbox.style.position = 'absolute';
+            textbox.style.top      = (event.pageY - 12) + 'px';
+            textbox.style.left     = (event.pageX - 8)  + 'px';
+            textbox.style.zIndex   = '2';
+
+            textbox.style.cursor  = 'text';
+            textbox.style.opacity = '0';
+
+            textbox.oninput = function() {
+                element.textContent = this.value;
+            };
+
+            this.container.querySelector('svg').appendChild(element);
+            this.container.appendChild(textbox);
+
+            this.numberOfObjects++;
+
+            return this;
+        };
+
+        /**
          * This method moves path.
          * @param {SVGElement} element This argument is the SVGElement that is target of movement.
          * @param {number} x This argument is the amount of horizontal movement.
@@ -1029,6 +1103,20 @@
             element.setAttribute('x2', newX2);
             element.setAttribute('y1', newY1);
             element.setAttribute('y2', newY2);
+
+            return this;
+        };
+
+        /**
+         * This method moves text.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.moveText = function(element, x, y) {
+            element.setAttribute('x', (x - 10));
+            element.setAttribute('y', (y + 10));
 
             return this;
         };
@@ -1222,6 +1310,7 @@
         Type.CIRCLE    = 'circle';
         Type.ELLIPSE   = 'ellipse';
         Type.LINE      = 'line';
+        Type.TEXT      = 'text';
 
         Drawer.Type = Type;
 
