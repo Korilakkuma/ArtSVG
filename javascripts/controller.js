@@ -63,6 +63,10 @@ $(function() {
         artSVG.setStrokeLinejoin(this.value);
     });
 
+    $('#select-font-family').change(function() {
+        artSVG.setFontFamily(this.value);
+    });
+
     $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
         if (!artSVG.undo()) {
             console.log('Cannot undo');
