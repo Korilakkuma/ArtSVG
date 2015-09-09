@@ -349,6 +349,24 @@
         return this;
     };
 
+    /**
+     * This method gets font-family.
+     * @return {string} This is returned as font-family.
+     */
+    ArtSVG.prototype.getFontFamily = function() {
+        return this.drawer.getFontFamily();
+    };
+
+    /**
+     * This method sets font-family.
+     * @param {string} fontFamily This argument is string for font-family.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setFontFamily = function(fontFamily) {
+        this.drawer.setFontFamily(fontFamily);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1239,6 +1257,24 @@
                 this.attributes['stroke-linejoin'] = strokeLinejoin.toLowerCase();
             }
 
+            return this;
+        };
+
+        /**
+         * This method gets font-family.
+         * @return {string} This is returned as font-family.
+         */
+        Drawer.prototype.getFontFamily = function() {
+            return this.font['font-family'];
+        };
+
+        /**
+         * This method sets font-family.
+         * @param {string} fontFamily This argument is string for font-family.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setFontFamily = function(fontFamily) {
+            this.font['font-family'] = String(fontFamily);
             return this;
         };
 
