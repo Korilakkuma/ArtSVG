@@ -385,6 +385,25 @@
         return this;
     };
 
+    /**
+     * This method gets font-style.
+     * @return {string} This is returned as font-style.
+     */
+    ArtSVG.prototype.getFontStyle = function() {
+        return this.drawer.getFontStyle();
+    };
+
+    /**
+     * This method sets font-style.
+     * @param {string} fontStyle This argument is one of 'normal', 'italic', 'oblique'.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setFontStyle = function(fontStyle) {
+        this.drawer.setFontStyle(fontStyle);
+
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1315,6 +1334,27 @@
         };
 
         /**
+         * This method gets font-style.
+         * @return {string} This is returned as font-style.
+         */
+        Drawer.prototype.getFontStyle = function() {
+            return this.font['font-style'];
+        };
+
+        /**
+         * This method sets font-style.
+         * @param {string} fontStyle This argument is string for font-style.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setFontStyle = function(fontStyle) {
+            if (String(fontStyle).toUpperCase() in Drawer.FontStyle) {
+                this.font['font-style'] = fontStyle.toLowerCase();
+            }
+
+            return this;
+        };
+
+        /**
          * This class method calculates relative horizontal coordinate on canvas from event object.
          * @param {Event} event This argument is to get coordinates at cursor.
          * @param {HTMLElement} container This argument is the instance of HTMLElement for wrapping SVGElement.
@@ -1409,6 +1449,18 @@
         StrokeLinejoin.BEVEL = 'bevel';
 
         Drawer.StrokeLinejoin = StrokeLinejoin;
+
+        /**
+         * This static class defines strings for font-style
+         */
+        function FontStyle() {
+        }
+
+        FontStyle.NORMAL  = 'normal';
+        FontStyle.ITALIC  = 'italic';
+        FontStyle.OBLIQUE = 'oblique';
+
+        Drawer.FontStyle = FontStyle;
 
         // Export
         $.Drawer = Drawer;
