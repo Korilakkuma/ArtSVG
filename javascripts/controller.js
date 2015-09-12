@@ -67,6 +67,10 @@ $(function() {
         artSVG.setFontFamily(this.value);
     });
 
+    $('#number-font-size').change(function() {
+        artSVG.setFontSize(this.value + 'px');
+    });
+
     $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
         if (!artSVG.undo()) {
             console.log('Cannot undo');
