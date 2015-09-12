@@ -367,6 +367,24 @@
         return this;
     };
 
+    /**
+     * This method gets font-size.
+     * @return {string} This is returned as font-size.
+     */
+    ArtSVG.prototype.getFontSize = function() {
+        return this.drawer.getFontSize();
+    };
+
+    /**
+     * This method sets font-size.
+     * @param {string} fontSize This argument is string for font-size.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setFontSize = function(fontSize) {
+        this.drawer.setFontSize(fontSize);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1275,6 +1293,24 @@
          */
         Drawer.prototype.setFontFamily = function(fontFamily) {
             this.font['font-family'] = String(fontFamily);
+            return this;
+        };
+
+        /**
+         * This method gets font-size.
+         * @return {string} This is returned as font-size.
+         */
+        Drawer.prototype.getFontSize = function() {
+            return this.font['font-size'];
+        };
+
+        /**
+         * This method sets font-size.
+         * @param {string} fontSize This argument is string for font-size.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setFontSize = function(fontSize) {
+            this.font['font-size'] = String(fontSize);
             return this;
         };
 
