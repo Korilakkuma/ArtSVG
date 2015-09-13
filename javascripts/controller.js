@@ -75,6 +75,10 @@ $(function() {
         artSVG.setFontStyle(this.value);
     });
 
+    $('#select-font-weight').change(function() {
+        artSVG.setFontWeight(this.value);
+    });
+
     $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
         if (!artSVG.undo()) {
             console.log('Cannot undo');
