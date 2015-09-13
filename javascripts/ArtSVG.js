@@ -404,6 +404,24 @@
         return this;
     };
 
+    /**
+     * This method gets font-weight.
+     * @return {string} This is returned as font-weight.
+     */
+    ArtSVG.prototype.getFontWeight = function() {
+        return this.drawer.getFontWeight();
+    };
+
+    /**
+     * This method sets font-weight.
+     * @param {string} fontWeight This argument is string for font-weight.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.setFontWeight = function(fontWeight) {
+        this.drawer.setFontWeight(fontWeight);
+        return this;
+    };
+
     (function($) {
 
         /**
@@ -1351,6 +1369,24 @@
                 this.font['font-style'] = fontStyle.toLowerCase();
             }
 
+            return this;
+        };
+
+        /**
+         * This method gets font-weight.
+         * @return {string} This is returned as font-weight.
+         */
+        Drawer.prototype.getFontWeight = function() {
+            return this.attributes['font-weight'];
+        };
+
+        /**
+         * This method sets font-weight.
+         * @param {string} fontWeight This argument is string for font-weight.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.setFontWeight = function(fontWeight) {
+            this.font['font-weight'] = String(fontWeight);
             return this;
         };
 
