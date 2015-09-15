@@ -260,6 +260,18 @@
     };
 
     /**
+     * This method draws image.
+     * @param {string} href This argument is one of path, Data URL, object URL.
+     * @param {number} x This argument is horizontal coordinate.
+     * @param {number} y This argument is vertical coordinate.
+     * @return {ArtSVG} This is returned for method chain.
+     */
+    ArtSVG.prototype.drawImage = function(href, x, y) {
+        this.drawer.drawImage(href, x, y);
+        return this;
+    };
+
+    /**
      * This method gets fill color.
      * @return {string} This is returned as fill color string.
      */
@@ -670,6 +682,8 @@
                 this.moveLine(element, x, y);
             } else if (element instanceof SVGTextElement) {
                 this.moveText(element, x, y);
+            } else if (element instanceof SVGImageElement) {
+                this.moveImage(element, x, y);
             }
 
             return this;
@@ -1068,6 +1082,44 @@
         };
 
         /**
+         * This method draws image.
+         * @param {string} href This argument is one of path, Data URL, object URL.
+         * @param {number} pointX This argument is horizontal coordinate.
+         * @param {number} pointY This argument is vertical coordinate.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.drawImage = function(href, pointX, pointY) {
+            var x = parseFloat(pointX);
+            var y = parseFloat(pointY);
+
+            if (isNaN(x)) {x = 0;}
+            if (isNaN(y)) {y = 0;}
+
+            var image = new Image();
+            var self  = this;
+
+            image.src = href;
+
+            image.onload = function() {
+                var element = document.createElementNS($.XMLNS, 'image');
+
+                element.setAttributeNS($.XLINK, 'xlink:href', String(href));
+
+                element.setAttributeNS(null, 'id',     (Drawer.ELEMENT_ID_PREFIX + self.numberOfObjects));
+                element.setAttributeNS(null, 'x',      x);
+                element.setAttributeNS(null, 'y',      y);
+                element.setAttributeNS(null, 'width',  this.width);
+                element.setAttributeNS(null, 'height', this.height);
+
+                self.container.querySelector('svg').appendChild(element);
+
+                self.numberOfObjects++;
+            };
+
+            return this;
+        };
+
+        /**
          * This method moves path.
          * @param {SVGElement} element This argument is the SVGElement that is target of movement.
          * @param {number} x This argument is the amount of horizontal movement.
@@ -1190,6 +1242,23 @@
         Drawer.prototype.moveText = function(element, x, y) {
             element.setAttribute('x', (x - 10));
             element.setAttribute('y', (y + 10));
+
+            return this;
+        };
+
+        /**
+         * This method moves image.
+         * @param {SVGElement} element This argument is the SVGElement that is target of movement.
+         * @param {number} x This argument is the amount of horizontal movement.
+         * @param {number} y This argument is the amount of vertical movement.
+         * @return {Drawer} This is returned for method chain.
+         */
+        Drawer.prototype.moveImage = function(element, x, y) {
+            var width  = parseFloat(element.getAttributeNS(null, 'width'));
+            var height = parseFloat(element.getAttributeNS(null, 'height'));
+
+            element.setAttributeNS(null, 'x', (x - width  / 2));
+            element.setAttributeNS(null, 'y', (y - height / 2));
 
             return this;
         };
