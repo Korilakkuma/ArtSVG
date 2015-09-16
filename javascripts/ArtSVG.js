@@ -2,7 +2,7 @@
  * ArtSVG.js
  * @fileoverview HTML5 SVG Library
  *
- * Copyright 2013@Tomohiro IKEDA
+ * Copyright (c) 2013 Tomohiro IKEDA (Korilakkuma)
  * Released under the MIT license
  */
  
