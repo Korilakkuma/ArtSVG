@@ -79,6 +79,24 @@ $(function() {
         artSVG.setFontWeight(this.value);
     });
 
+    $('[type="file"]').change(function(event) {
+        var file = event.currentTarget.files[0];
+
+        if (!(file instanceof File)) {
+            window.alert('Please upload file.');
+        } else if (file.type.indexOf('image') === -1) {
+            window.alert('Please upload image file.');
+        } else {
+            var reader = new FileReader();
+
+            reader.onload = function() {
+                artSVG.drawImage(reader.result, 0, 0);
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+
     $('#button-undo').on(ArtSVG.MouseEvents.CLICK, function() {
         if (!artSVG.undo()) {
             console.log('Cannot undo');
