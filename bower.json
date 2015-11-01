@@ -1,0 +1,21 @@
+{
+  "name": "art-svg",
+  "version": "0.0.0",
+  "homepage": "https://github.com/Korilakkuma/ArtSVG",
+  "authors": [
+    "Korilakkuma <rilakkuma.san.xjapan@gmail.com>"
+  ],
+  "description": "HTML5 SVG Library",
+  "main": "build/ArtSVG.min.js",
+  "keywords": [
+    "ArtSVG.js",
+    "ArtSVG",
+    "JavaScript",
+    "HTML5",
+    "SVG",
+    "Library"
+  ],
+  "license": "MIT",
+  "ignore" : [
+  ]
+}
