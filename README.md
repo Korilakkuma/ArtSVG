@@ -17,6 +17,14 @@ In concrete, this library may be useful to implement the following features.
   
 * [Art SVG](https://korilakkuma.github.io/ArtSVG/)
   
+## Installation
+  
+    $ npm install art-svg
+  
+or,
+  
+    $ bower install art-svg
+  
 ## Usage
   
 The 1st, ArtSVG class is required.
